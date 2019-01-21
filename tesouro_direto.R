@@ -1,5 +1,3 @@
-# http://www.tesouro.gov.br/tesouro-direto-balanco-e-estatisticas
-
 library(XLConnect)
 library(data.table)
 
