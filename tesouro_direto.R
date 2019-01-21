@@ -21,7 +21,7 @@ makelabels <- function( aux ){
   return(dts)
 }
 
-# clear empty and NA non date rows 
+# clear empty and NA rows 
 
 clearrows <- function( df ){
   clean <- data.frame()
@@ -62,16 +62,10 @@ tesouro_direto_a <- function(arq){
     # clear empty and NA rows
     df <- clearrows( df )
     dt <- data.table(df[,c(1:3)])
-    # handle exceptions
-    #if( arq == 'historicoLTN_2011.xls' & name == 'LTN010711' ){
-    #  dt <- data.table(df[c(1:124),c(1:3)])
-    #}
     names(dt) <- c('date','bid','ask')
     #
     # organize dates
     #
-    # there's a bug in the excel sheets
-    # line 164 in LTN010117, LTN010118 and LTN010121 and line 148 in LTN010119 and LTN010123
     if( ano_base == 2016 ){
       dt[,date := ifelse( date == '2016-08-23 00:00:00', '23/08/2016', date )]
     }
@@ -83,23 +77,20 @@ tesouro_direto_a <- function(arq){
     }else{
         dt[,date := as.Date(date)]
     }
-    # numbers
-    #if( (ano_base == 2011 & name == 'LTN010711') & (ano_base == 2010 & name == 'LTN010710') ){
-    #  dt[,bid := as.numeric(gsub('%','',bid))]
-    #  dt[,ask := as.numeric(gsub('%','',ask))]
-    #}else{
-    #  dt[,bid := 100*as.numeric(gsub('%','',bid))]
-    #  dt[,ask := 100*as.numeric(gsub('%','',ask))]
-    #}
     dt[,bid := as.numeric(gsub('%','',bid))]
     dt[,ask := as.numeric(gsub('%','',ask))]
+    
+    # sometimes percent data comes from excel divided by 100 
+    
     if( dt[1,bid < 1] ){
       dt[,bid := 100*bid]
     }
     if( dt[1,ask < 1] ){
       dt[,ask := 100*ask]
     }
+    
     # buy & sell average
+    
     dt[,avr := (bid + ask)/2]
     tso <- dt[,list(date,avr)]
     
@@ -119,13 +110,13 @@ tesouro_direto_a <- function(arq){
     }
     # name sheet and name list object
     names(tso)[2] <- name
-    #
+    # load info into a list
     l[[ name ]] <- tso
   }
   return(l)
 }
 
-# monta lista com info completa sobre titulos e datas
+# construct list with selected info about bonds and dates
 
 periodo <- c(2002:2019)
 l <- list()
